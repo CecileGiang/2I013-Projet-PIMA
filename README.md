@@ -1,9 +1,9 @@
 # Projet-PIMA_2I013
 (Projet PIMA 2017-2018) Evaluer vite et bien: de la robotique aux polynômes
 
-**Encadrant: Mohab Safey El Din
+**Encadrant:** Mohab Safey El Din
 **Etudiants:** GIANG Cécile, OSUNA VARGAS Ana Pamela,YE Weijie
-Titre: Evaluer vite et bien: de la robotique aux polynômes**
+**Titre: Evaluer vite et bien: de la robotique aux polynômes**
 
 **_Description:_** Ce projet est motivé par une application et robotique qui faitl'objet d'une collaboration entre l'UPMC (Sorbonne Université) et l'université J.Kepler en Autriche: la planification de trajectoire de robots dont les propriétés mécaniques sont particulières. Après un long processus de modélisation, on est ramené à étudierle nombre de composantes connexes de courbes planes (définies par l'annulation de polynômes en deux variables).
 Cette étape donne lieu à des calculs intensifs et très coûteux. Ils nécessitent  d'évaluer des polynômes en une variable de degré gigantesque (autour de 100 000) et dont les tailles de coefficients sont tout aussi imposantes (de l'ordre du million de bits).

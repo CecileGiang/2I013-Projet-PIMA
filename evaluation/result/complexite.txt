@@ -1,0 +1,25 @@
+On a realise deux tests.
+
+Le test eval1 qui fait évoluer le degré de polynôme avec des coefficients assez petit et le variable est représenté par a et k deux variables qui sont saisies par 
+
+l’utilisateur.
+
+Durant le test on observe deux courbes presque linéaires, et on remarque que la deuxième méthode est beaucoup plus efficace que la premiere.
+
+
+
+eval1:
+On estime les complexités
+
+n=degré
+fonction 1:	O(17*n);
+
+
+fonction 2:	O(2*n);
+
+
+Pour le deuxième test on a fait varier les coefficients, et on souhaite savoir 
+
+eval2:
+
+On observe que la deuxième méthode est toujours plus efficace que la premiere mais pour deux fonctions la variation des coefficients a peu d’impact sur le temps d’exécution des programmes.

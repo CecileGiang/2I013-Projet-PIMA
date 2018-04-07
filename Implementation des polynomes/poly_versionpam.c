@@ -1,77 +1,3 @@
-# include <stdio.h>
-# include <stdlib.h>
-# include <stdint.h>
-# include <string.h>
-# include <math.h>
-# include <time.h>
-# include <gmp.h>
-
-/* FONCTIONS DE LECTURE/ECRITURE DE POLYNOMES DANS UN FICHIER C */
-
-void parse_file(char *nom_fichier, mpz_t *polynome, unsigned long int deg){
-
-	FILE *f;
-	f = fopen(nom_fichier, "r");
-
-	unsigned long int i = 0;
-
-	if(f==NULL){
-		fprintf(stderr, "Impossible d'ouvrir le fichier\n");
-		exit(1);
-	}
-
-	while(i<=deg){
-		mpz_inp_str(polynome[i], f, 10); //lit le mpz_t stocké dans le fichier, le stocke dans polynôme[i] puis passe à la ligne
-		i++;
-	}
-		fclose(f);
-}
-
-
-void set_coefficients(char *nom_fichier, unsigned long int deg){
-
-	FILE *f;
-	f = fopen(nom_fichier, "w+");
-
-	if(f==NULL){
-		fprintf(stderr, "Impossible d'ouvrir le fichier\n");
-		exit(1);
-	}
-
-	mpz_t coeff;
-	mpz_init(coeff); //coeff prendra les valeurs des mpz_t générés aléatoirement
-
-	gmp_randstate_t seed;
-	gmp_randinit_default(seed);
-	gmp_randseed_ui(seed, time(NULL)); //Paramétrage du noyau pour la génération aléatoire (cf. NOTE)
-
-	unsigned long int i;
-	for(i=0; i<=deg; i++){
-		mpz_rrandomb(coeff, seed, 5);
-		mpz_out_str (f, 10, coeff); //mpz_out_str (FILE *stream, int base, const mpz_t op) écrit dans le flux entré en paramètre le mpz_t op dans la base indiquée
-		fputs("\n",f); //retour à la ligne
-	}
-
-	gmp_randclear(seed);
-	mpz_clear(coeff);
-
-	fclose(f);
-}
-
-/* NOTE:
-Génération aléatoire de mpz_t. Ces mpz_t seront ensuite stockés dans un fichier qui pourra être lu par la fonction parse_file. Le nombre de mpz_t créés sera de n avec n e degré entré par l'utilisateur.
-
-Pour initialiser le noyau (seed) permettant de générer aléatoirement des nombres, il nous faut déclarer un paramètre (dit "random state parameter"), et l'initialiser par la fonction gmp_randinit_defaut.
-Le noyau initial sera ensuite modifié avec la fonction gmp_randseed_ui.
-
-La taille du noyau détermine le nombre de séquences de nombres aléatoires qu'il est possible de générer.
-
-Une fois le noyau correctement paramétré, l'appel à mpz_rrandomb (mpz_t rop, gmp_randstate_t state, mp_bitcnt_t n) permet de générer un mpz_t aléatoire, compris entre 0 et 2^n-1 inclus, et de le stocker dans rop.
-*/
-
-
-/* FONCTIONS D'EVALUATION DE POLYNOMES SELON LES 2 METHODES DECRITES DANS LE FICHIER .h */
-
 
 /*PROBLÈME FONCTION 1: calcul de xi par décalage ne donne pas le résultat attendu */
 
@@ -135,7 +61,7 @@ void eval_poly_1f(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, mp
 
 }
 
-void eval_poly_1bis(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, mpz_t *num, int den){
+void eval_poly_1bis(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, mpz_t *num, int *den){
 	mpz_t tmp1;
 	mpz_t tmp2;
 	mpz_t num1;
@@ -166,21 +92,21 @@ void eval_poly_1bis(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, 
 	mpz_mul_si(tmp1, num1, den2);
 	mpz_mul_si(tmp2, num2, den1);
 	mpz_add(tmp1, tmp1, tmp2);
-	mpz_set(*den, tmp1);
-	*num = num1*num2;
+	mpz_set(*num, tmp1);
+	*den = den1*den2;
 
 	for (i = 2; i <= deg; i++){
-		mpz_set(den1, *den);
-		num1 = *num;
+		mpz_set(num1, *num);
+		den1 = *den;
 		ai_decale = ai_decale * a;
 		mpz_mul_si(tmp1, coeff[i], ai_decale);
 		mpz_set(num2, tmp1);
-		num2 = num1 * (1<<k);
+		den2 = den1 * (1<<k);
 		mpz_mul_si(tmp1, num1, den2);
 		mpz_mul_si(tmp2, num2, den1);
 		mpz_add(tmp1, tmp1, tmp2);
-		mpz_set(*den, tmp1);
-		*num = num1*num2;
+		mpz_set(*num, tmp1);
+		*den = den1*den2;
 	}
 	mpz_clear(num1);
 	mpz_clear(num2);
@@ -274,7 +200,7 @@ int main(){
 	mpz_init(num1);
 
 	eval_poly_2(poly, a, k, deg, &num1, &den1);
-	gmp_printf("Resultat méthode 2: %Zd / %d\n", num1, den1);
+	gmp_printf("Resultat méthode 1-bis: %Zd / %d\n", num1, den1);
 
 	mpz_clear(num1);
 
@@ -283,8 +209,8 @@ int main(){
 	mpz_t num2;
 	mpz_init(num2);
 
-	eval_poly_2(poly, a, k, deg, &num, &den);
-	gmp_printf("Resultat méthode 2: %Zd / %d\n", num, den);
+	eval_poly_2(poly, a, k, deg, &num2, &den2);
+	gmp_printf("Resultat méthode 2: %Zd / %d\n", num2, den2);
 
 	mpz_clear(num2);
 

@@ -199,7 +199,7 @@ int main(){
 	mpz_t num1;
 	mpz_init(num1);
 
-	eval_poly_2(poly, a, k, deg, &num1, &den1);
+	eval_poly_1bis(poly, a, k, deg, &num1, &den1);
 	gmp_printf("Resultat méthode 1-bis: %Zd / %d\n", num1, den1);
 
 	mpz_clear(num1);

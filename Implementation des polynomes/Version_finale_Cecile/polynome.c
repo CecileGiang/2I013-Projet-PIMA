@@ -26,10 +26,12 @@ void parse_file(char *nom_fichier, mpz_t *polynome, unsigned long int deg){
 	}
 	
 	while(i<=deg){
-		mpz_inp_str(polynome[i], f, 10); //lit le mpz_t stocké dans le fichier, le stocke dans polynôme[i] puis passe à la ligne
+		mpz_inp_str(polynome[i], f, 10); 
+		//lit le mpz_t stocké dans le fichier, le stocke dans polynôme[i] puis passe à la ligne
 		i++;
 	}
-		fclose(f);
+	
+	fclose(f);
 }
 	
 	

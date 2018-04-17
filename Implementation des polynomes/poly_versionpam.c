@@ -84,11 +84,16 @@ void random_coeff(char *nom_fichier, unsigned long int deg) {
 }
 
 /* FONCTION AUXILIAIRE: REDUCTION D UNE FRACTION */
-/* Nous utiliserons cette fonction pour avoir la fraction qui donne comme resultat l evaluation du polynome, sur sa forme reduite.
+
+/* 
+
+Nous utiliserons cette fonction pour avoir la fraction qui donne comme resultat l evaluation du polynome, sur sa forme reduite.
 Nous profitons le fait que le denominateur est toujours une puissance de 2, donc, tant que le reste de la division du numerateur par 2 soit 0,
 nous en deduisons que le numerateur est pair, est donc nous pouvons le diviser par 2, ainsi que le denominateur.
 Comme pour faire ce teste nous aurons deja divise, nous avons une division de plus. 
-Ce pourquoi a la fin nous ajoutons 1 au resultat et nous multiplions par 2*/
+Ce pourquoi a la fin nous ajoutons 1 au resultat et nous multiplions par 2
+
+*/
 
 void reduire_fraction(mpz_t *den, mpz_t *num){
 	
@@ -307,6 +312,7 @@ int main(){
 
 
 	/* Evaluation de polynôme : les valeurs de a et k seront demandees*/
+	
 	unsigned long int i;
 	for(i=0; i<=deg; i++) {
 		gmp_printf("%Zd\n", poly[i]);

@@ -64,7 +64,7 @@ void random_coeff(char *nom_fichier, unsigned long int deg) {
 
 
 	for (i = 0; i <= deg; i++){
-		mpz_rrandomb(coeff, state, 120); //coeff prend une valeur random entre 0 et 2**(n-1) grace a l algorithme pris par state
+		mpz_rrandomb(coeff, state, 120); //coeff prend une valeur random entre 0 et 2^(n-1) grace a l algorithme pris par state
 		if (rand()%2 == 0){ //nous creons artificiellement des entiers negatifs aussi, avec une chance sur deux
 			sign = 1;
 		}
@@ -79,20 +79,46 @@ void random_coeff(char *nom_fichier, unsigned long int deg) {
 	mpz_clear(coeff);
 
 
-/*      Commentaires: nous devrions avoir des nombres aleatoires entre 0 et 2**(n-1), 
+/*      Commentaires: nous devrions avoir des nombres aleatoires entre 0 et 2^(n-1), 
 	pourtant nous trouvons que des nombres avec le meme nombre de chiffres a chaque fois  */
 }
 
+/* FONCTION AUXILIAIRE: REDUCTION D UNE FRACTION */
+/* Nous utiliserons cette fonction pour avoir la fraction qui donne comme resultat l evaluation du polynome, sur sa forme reduite.
+Nous profitons le fait que le denominateur est toujours une puissance de 2, donc, tant que le reste de la division du numerateur par 2 soit 0,
+nous en deduisons que le numerateur est pair, est donc nous pouvons le diviser par 2, ainsi que le denominateur.
+Comme pour faire ce teste nous aurons deja divise, nous avons une division de plus. 
+Ce pourquoi a la fin nous ajoutons 1 au resultat et nous multiplions par 2*/
 
-/* FONCTIONS D EVALUATION DE POLYNOMES SELON LES 2 METHODES DECRITES DANS LE FICHIER .h */
+void reduire_fraction(mpz_t *den, mpz_t *num){
+	
+	mpz_t num1;
+	mpz_init(num1);
+	mpz_set(num1, *num);
+
+	mpz_t reste_num;
+	mpz_init(reste_num);
+	
+	do{
+		mpz_tdiv_r_2exp(reste_num, num1, 1); //reste_num stockera le reste de la division euclidienne de num1 par 2^1
+		mpz_div_2exp(*den, *den, 1);
+	}
+	while (mpz_cmp(reste_num, 0) == 0); // mpz_cmp(mpz_t op1, double op2) renvoie 0 lorsque op1 = op2
+	mpz_mul_2exp(num1, num1, 1);
+	mpz_add_ui(*num, num1, 1);
+	mpz_mul_2exp(*den, *den, 1); 
+
+}
 
 
-/*PROBLEME FONCTION 1: calcul de xi par decalage ne donne pas le resultat attendu */
-
+/* FONCTIONS D EVALUATION DE POLYNOMES */
 
 /* METHODE 1: q(a/(2^k)) = c0*(a/(2^k))⁰ + c1*(a/(2^k))¹ +...+ cn*(a/(2^k))^n, ou n est le degre du polynome*/
 
-//Cette premiere fonction ne marche pas adequadement parce qu'elle n'est pas precise a cause de la facon dont la division est traitee (c est-a-dire division entiere), pourtant elle nous sert pour avoir une approximation du resultat et ainsi avoir un point de comparaison
+/* Avec cette premiere fonction, nous obtenons un resultat qui n est pas precis a cause de la facon dont la division est traitee (c est-a-dire division entiere), 
+pourtant elle nous sert pour avoir une approximation du resultat et ainsi avoir un point de comparaison.
+Elle marche de la maniere suivant: nous calculons a chaque iteration le produit du coefficient par la valeur d evaluation, 
+qui peut bien ne pas etre un entier. Pourtant, nous traitons cette valeur comme un entier et nous rajoutons ce produit a une variable qui representera le resultat. */
 
 void eval_poly_1(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, mpz_t *res){
 
@@ -108,9 +134,9 @@ void eval_poly_1(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, mpz
 
 		unsigned long int i;
 		for(i=1; i<=deg; i++){
-			mpz_mul_si(tmp, coeff[i], ai); //on multiplie a**i par la valeur du i-eme coefficient
+			mpz_mul_si(tmp, coeff[i], ai); //on multiplie a^i par la valeur du i-eme coefficient
 			ai = ai*a;			//on augmente la puissance de a par 1
-			mpz_div_2exp(tmp, tmp, k*i);	//on divisse le numerateur par la i-eme puissance de 2**k
+			mpz_div_2exp(tmp, tmp, k*i);	//on divisse le numerateur par la i-eme puissance de 2^k
 			mpz_add(*res, *res, tmp);  	//on fait la somme des deux termes
 		}
 
@@ -119,7 +145,21 @@ void eval_poly_1(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, mpz
 }
 
 
-/* METHODE 1: q(a/(2^k)) = c0*(a/(2^k))⁰ + c1*(a/(2^k))¹ +...+ cn*(a/(2^k))^n, ou n est le degre du polynome*/
+/* METHODE 1: q(a/(2^k)) = c0*(a/(2^k))⁰ + c1*(a/(2^k))¹ +...+ cn*(a/(2^k))^n, ou n est le degre du polynome  */
+
+/* 
+
+La valeur obtenu comme resultat en utilisant cette fonction est bien precise, elle marche de la facon suivante:
+L idee est de faire la somme deux a deux des termes ci-dessus, sans utiliser le fait qu on sait que le denominateur commun sera celui du deuxieme terme.
+D abord nous creons les variables temporaires qui stockerons les resultats des sommes et multiplications a chaque iteration, egalement des variables
+qui prendront les valeurs des numerateurs et denominateurs.
+Donc, nous avons le num1 et den1 qui seront le numerateur et denominateur du terme a gauche. Aussi, nous avons num2 et den2 qui represent le terme a droite.
+A chaque iteration nous faisons le produit de num1 et den2, ainsi que celui de den1 et num2. Apres nous faisons la somme de ce produit, qui sera
+utilise comme num1 pour la prochaine iteration, et nous donnerons a num2 la valeur qui correspond a son degre, c est-a-dire, le produit de son coefficient correspondant par a^i,
+i etant le degre du terme.
+Pour le traitement de denominateur, nous faisons le produit de deux denominateurs a chaque iteration, pourvu que nous devons sommer en utilisant un denominateur commun
+
+*/
 
 void eval_poly_1bis(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, mpz_t *num, mpz_t *den){
 	
@@ -142,12 +182,12 @@ void eval_poly_1bis(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, 
 
 	mpz_t den1;
 	mpz_init(den1);
-	mpz_set_si(den1, 1);	//le premier terme a comme denominateur 1, qui est (2**k)**0
+	mpz_set_si(den1, 1);	//le premier terme a comme denominateur 1, qui est (2^k)^0
 
 	mpz_t den2;
 	mpz_init(den2);
 	mpz_set_si(den2, 1);
-	mpz_mul_2exp(den2,den2, k); //le deuxieme terme a comme denominateur (2**k)**1
+	mpz_mul_2exp(den2,den2, k); //le deuxieme terme a comme denominateur (2^k)^1
 
 	mpz_mul_si(num1, coeff[0], ai);
 	mpz_mul_si(num2, coeff[1], ai_decale);
@@ -190,9 +230,6 @@ void eval_poly_1bis(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, 
 	mpz_clear(den1);
 	mpz_clear(den2);
 }
-
-/* PROBLÈME FONCTION 2: division entière du res */
-
 
 /* METHODE 2: q(a/(2^k)) = (c0*a⁰*2^(k*n) + c1*a¹*2^(k*(n-1)) +...+ cn*a^n*2^(k*(n-n)))/2^(n*k), où n est le degré du polynôme. */
 
@@ -253,26 +290,6 @@ void eval_poly_horner(mpz_t *coeff, int a, unsigned int k, unsigned long int deg
   }
       mpz_clear(tmp1);
       mpz_clear(tmp2);
-}
-
-void reduire_fraction(mpz_t *den, mpz_t *num){
-	
-	mpz_t num1;
-	mpz_init(num1);
-	mpz_set(num1, *num);
-
-	mpz_t reste_num;
-	mpz_init(reste_num);
-	
-	do{
-		mpz_tdiv_r_2exp(reste_num, num1, 1); //reste_num stockera le reste de la division euclidienne de num1 par 2**1
-		mpz_div_2exp(*den, *den, 1);
-	}
-	while (mpz_cmp(reste_num, 0) == 0); // mpz_cmp(mpz_t op1, double op2) renvoie 0 lorsque op1 = op2
-	mpz_mul_2exp(num1, num1, 1);
-	mpz_add_ui(*num, num1, 1);
-	mpz_mul_2exp(*den, *den, 1); 
-
 }
 
 int main(){

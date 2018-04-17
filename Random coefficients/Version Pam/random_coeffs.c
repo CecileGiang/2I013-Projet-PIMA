@@ -47,6 +47,7 @@ void random_coeff(char *nom_fichier, unsigned long int deg) {
 	}
 	gmp_randclear(state);
 	mpz_clear(coeff);
+	fclose(f);
 
 
 //commentaires: nous devrions avoir des nombres aleatoires entre 0 et 2**(n-1), pourtant nous trouvons que des nombres avec le meme nombre de chiffres a chaque fois

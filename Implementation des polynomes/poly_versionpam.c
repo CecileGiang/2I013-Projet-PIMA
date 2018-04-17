@@ -6,7 +6,7 @@
 # include <time.h>
 # include <gmp.h>
 
-/* FONCTIONS DE LECTURE/ECRITURE DE POLYNOMES DANS UN FICHIER C */
+/* _______________FONCTIONS DE LECTURE/ECRITURE DE POLYNOMES DANS UN FICHIER C___________ */
 
 /* Cette fonction nous permet de lire les coefficients de type mpz_t ecrits dans un fichier sur la forme d une liste. 
 Nous lisons donc chaque ligne, ensuite nous stockons le coefficient dans un tableau qui representera notre polynome et puis nous faisons un retour a la ligne. 
@@ -32,7 +32,7 @@ void parse_file(char *nom_fichier, mpz_t *polynome, unsigned long int deg){
 		fclose(f);
 }
 
-/* GENERATION ALEATOIRE DE MPZ_T */
+/* __________GENERATION ALEATOIRE DE MPZ_T___________ */
 
 /*
 
@@ -88,7 +88,7 @@ void random_coeff(char *nom_fichier, unsigned long int deg) {
 	pourtant nous trouvons que des nombres avec le meme nombre de chiffres a chaque fois  */
 }
 
-/* FONCTION AUXILIAIRE: REDUCTION D UNE FRACTION */
+/* ______FONCTION AUXILIAIRE: REDUCTION D UNE FRACTION_________ */
 
 /* 
 
@@ -121,9 +121,13 @@ void reduire_fraction(mpz_t *den, mpz_t *num){
 }
 
 
-/* FONCTIONS D EVALUATION DE POLYNOMES */
+/* __________FONCTIONS D EVALUATION DE POLYNOMES__________ */
 
-/* METHODE 1: q(a/(2^k)) = c0*(a/(2^k))⁰ + c1*(a/(2^k))¹ +...+ cn*(a/(2^k))^n, ou n est le degre du polynome*/
+/* METHODE 1: 
+
+Soit Q un polynome a coefficients entiers notes c0, c1, ... , cn et n son degre:
+
+Q(a/(2^k)) = c0*(a/(2^k))⁰ + c1*(a/(2^k))¹ +...+ cn*(a/(2^k))^n */
 
 /* 
 
@@ -159,7 +163,11 @@ void eval_poly_1(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, mpz
 }
 
 
-/* METHODE 1: q(a/(2^k)) = c0*(a/(2^k))⁰ + c1*(a/(2^k))¹ +...+ cn*(a/(2^k))^n, ou n est le degre du polynome  */
+/* METHODE 1: 
+
+Soit Q un polynome a coefficients entiers notes c0, c1, ... , cn et n son degre:
+
+Q(a/(2^k)) = c0*(a/(2^k))⁰ + c1*(a/(2^k))¹ +...+ cn*(a/(2^k))^n */
 
 /* 
 
@@ -245,7 +253,11 @@ void eval_poly_1bis(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, 
 	mpz_clear(den2);
 }
 
-/* METHODE 2: q(a/(2^k)) = (c0*a⁰*2^(k*n) + c1*a¹*2^(k*(n-1)) +...+ cn*a^n*2^(k*(n-n)))/2^(n*k), où n est le degré du polynôme. */
+/* METHODE 2: 
+
+Soit Q un polynome a coefficients entiers dont la taille peut etre tres grande, notes c0, c1, ... , cn 
+et n son degre:
+Q(a/(2^k)) = (c0*a⁰*2^(k*n) + c1*a¹*2^(k*(n-1)) +...+ cn*a^n*2^(k*(n-n)))/2^(n*k) */
 
 void eval_poly_2(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, mpz_t *num, mpz_t *den){
 

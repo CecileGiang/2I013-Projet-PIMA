@@ -255,10 +255,8 @@ Q(a/(2^k)) = (c0*a⁰*2^(k*n) + c1*a¹*2^(k*(n-1)) +...+ cn*a^n*2^(k*(n-n)))/2^(
 
 void eval_poly_2(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, mpz_t *num, mpz_t *den){
 
-
-	int ai = a; //ai est la valeur a^i pour le coefficient ci
-	int ai_decale; //ai_decale prendra la valeur de ai*2^ki
-
+	mpz_set_si(ai, a); //ai est la valeur a^i pour le coefficient ci
+	mpz_t ai_decale; //ai_decale prendra la valeur de ai*2^ki
 
 	mpz_t tmp;
 	mpz_init(tmp);
@@ -275,16 +273,18 @@ void eval_poly_2(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, mpz
 
 		unsigned long int i;
 		for(i=1; i<=deg; i++){
-			ai_decale = ai*pow(2,k*(deg-i));
-			mpz_mul_si(tmp, coeff[i], ai_decale);
+			mpz_mul_2exp(ai_decale, ai, k*(deg-i));
+			mpz_mul(tmp, coeff[i], ai_decale);
 			mpz_add(*num, *num, tmp);
-			ai = ai*a;
+			mpz_mul_si(ai, ai, a);
 		}
 
 		mpz_mul_2exp(*den, *den, k*deg);
 	}
 
 	mpz_clear(tmp);
+	mpz_clear(ai_decale);
+	mpz_clear(ai);
 }
 
 /*	 EVALUATION D APRES LA METHODE DE HORNER

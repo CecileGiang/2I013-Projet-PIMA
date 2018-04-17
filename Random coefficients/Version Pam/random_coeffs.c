@@ -3,6 +3,14 @@
 #include <time.h>
 #include <stdlib.h>
 
+
+/* Cette fonction ecrit des coefficients entiers de type mpz sur un fichier donne en argument. 
+Ceci se fait en implantantant un etat random a l aide de l algorithme de Mersenne Twister. 
+Ce noyau donne plus tard des valeurs aleatoires (entre 0 et 2^(n-1), n etant le troisieme argument de la fonction)
+a chaque coefficient.
+Comme nous souhaitons aussi avoir des nombres negatifs, nous les generons aleatoirement, c est-a-dire, nous creons une variable signe,
+qui determinera si un nombre est positif ou negatif avec une equiprobabilite */
+
 void random_coeff(char *nom_fichier, unsigned long int deg) {
 	
 	FILE *f = fopen(nom_fichier, "w");

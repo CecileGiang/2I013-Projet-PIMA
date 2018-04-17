@@ -295,10 +295,13 @@ void eval_poly_2(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, mpz
 
 /*	 EVALUATION D APRES LA METHODE DE HORNER
 
-La methode de Horner pour un polynome P(X) = c0 + c1*X + c2*X² + ... + cn*X^n donne : 
-              P(X) = c0 + X(c1 + X(c2 + ... + X(cn-2 + X(cn-1 + cn*X))...)).
-Appliquee dans notre cas, ie. pour un polynome evalue en X = a/2^k, cela donne: 
-              Q(a/2^k) = c0 + (c1 + ... (cn-2 + (cn-1 + (cn*a)/2^k)*a/2^k)*a/2^k) ... )*a/2^k
+La methode de Horner pour un polynome P(X) = c0 + c1*X + c2*X^2 + ... + cn*X^n  ou n est son degre et donc
+le coefficient dominant n est pas nul, permet d evaluer un polynome quelconque de la maniere suivante:
+              P(X) = c0 + X(c1 + X(c2 + ... + X(cn-1 + cn*X)))
+	      
+Appliquee dans notre cas, pour un polynome evalue en X = a/2^k, cela donne:
+              Q(a/2^k) = c0 + (a/2^k)(c1 + (a/2^k) * (c2 + ... + (a/2^k) * (cn-1 + cn * (a/2^k))))
+	      
 Soit, en mettant tout sur le meme denominateur:
 	a) au numerateur: c0*2^(nk) + c1*a*2^(n-1)k + ... + cn-3*a*2^(3k) + cn-2*a*2^(2k) + cn-1*a*2^k + cn*a
 	b) au denominateur: 2^(nk)

@@ -48,7 +48,7 @@ qui determinera si un nombre est positif ou negatif avec une equiprobabilite.
 
 void random_coeff(char *nom_fichier, unsigned long int deg) {
 	
-	FILE *f = fopen(nom_fichier, "w");
+	FILE *f = fopen(nom_fichier, "w+");
 
 	if (f == NULL){
 		printf("Erreur lors de l ouverture du fichier\n");
@@ -69,7 +69,7 @@ void random_coeff(char *nom_fichier, unsigned long int deg) {
 
 
 	for (i = 0; i <= deg; i++){
-		mpz_rrandomb(coeff, state, 120); //coeff prend une valeur random entre 0 et 2^(n-1) grace a l algorithme pris par state
+		mpz_rrandomb(coeff, state, 20); //coeff prend une valeur random entre 0 et 2^(n-1) grace a l algorithme pris par state
 		if (rand()%2 == 0){ //nous creons artificiellement des entiers negatifs aussi, avec une chance sur deux
 			sign = 1;
 		}
@@ -82,6 +82,7 @@ void random_coeff(char *nom_fichier, unsigned long int deg) {
 	}
 	gmp_randclear(state);
 	mpz_clear(coeff);
+	fclose(f);
 
 
 /*      Commentaires: nous devrions avoir des nombres aleatoires entre 0 et 2^(n-1), 
@@ -224,8 +225,6 @@ void eval_poly_1bis(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, 
 	mpz_mul(tmp2, num2, den1);
 	mpz_add(*num, tmp1, tmp2);
 	mpz_mul(*den, den1, den2);
-	gmp_printf("numerateur: %Zd\n", *num);
-	gmp_printf("denominateur: %Zd\n", *den);
 
 	for (i = 2; i <= deg; i++){
 		mpz_set(num1, *num);
@@ -237,12 +236,7 @@ void eval_poly_1bis(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, 
 		mpz_mul(tmp2, num2, den1);
 		mpz_add(*num, tmp1, tmp2);
 		mpz_mul(*den, den1, den2);
-		gmp_printf("denominateur: %Zd\n", *den);
-		gmp_printf("numerateur: %Zd\n", *num);
-		gmp_printf("den1: %Zd\n", den1);
-		gmp_printf("num1: %Zd\n", num1);
-		gmp_printf("den2: %Zd\n", den2);
-		gmp_printf("num2: %Zd\n", num2);
+
 	}
 	
 	mpz_clear(num1);

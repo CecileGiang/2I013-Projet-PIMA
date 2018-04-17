@@ -32,14 +32,19 @@ void parse_file(char *nom_fichier, mpz_t *polynome, unsigned long int deg){
 		fclose(f);
 }
 
-/* GENERATION ALEATOIRE DE MPZ_T
+/* GENERATION ALEATOIRE DE MPZ_T */
+
+/*
+
 Cette fonction ecrit des coefficients entiers de type mpz sur un fichier donne en argument, qui pourrq etre lu plus tard par la fonction parse_file.
 Le nombre de coefficients sera de n+1 avec n le degre donne par l utilisateur.
 Ceci se fait en implantantant un etat random a l aide de l algorithme de Mersenne Twister. 
 Ce noyau donne plus tard des valeurs aleatoires (entre 0 et 2^(n-1), n etant le troisieme argument de la fonction)
 a chaque coefficient.
 Comme nous souhaitons aussi avoir des nombres negatifs, nous les generons aleatoirement, c est-a-dire, nous creons une variable signe,
-qui determinera si un nombre est positif ou negatif avec une equiprobabilite */
+qui determinera si un nombre est positif ou negatif avec une equiprobabilite.
+
+*/
 
 void random_coeff(char *nom_fichier, unsigned long int deg) {
 	
@@ -120,10 +125,14 @@ void reduire_fraction(mpz_t *den, mpz_t *num){
 
 /* METHODE 1: q(a/(2^k)) = c0*(a/(2^k))⁰ + c1*(a/(2^k))¹ +...+ cn*(a/(2^k))^n, ou n est le degre du polynome*/
 
-/* Avec cette premiere fonction, nous obtenons un resultat qui n est pas precis a cause de la facon dont la division est traitee (c est-a-dire division entiere), 
+/* 
+
+Avec cette premiere fonction, nous obtenons un resultat qui n est pas precis a cause de la facon dont la division est traitee (c est-a-dire division entiere), 
 pourtant elle nous sert pour avoir une approximation du resultat et ainsi avoir un point de comparaison.
 Elle marche de la maniere suivant: nous calculons a chaque iteration le produit du coefficient par la valeur d evaluation, 
-qui peut bien ne pas etre un entier. Pourtant, nous traitons cette valeur comme un entier et nous rajoutons ce produit a une variable qui representera le resultat. */
+qui peut bien ne pas etre un entier. Pourtant, nous traitons cette valeur comme un entier et nous rajoutons ce produit a une variable qui representera le resultat. 
+
+*/
 
 void eval_poly_1(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, mpz_t *res){
 

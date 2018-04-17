@@ -321,7 +321,7 @@ void eval_poly_horner(mpz_t *coeff, int a, unsigned int k, unsigned long int deg
     for (i = d; i >= 0; i--){
       	mpz_mul_si(tmp1, *num, a);
 	mpz_set_si(*den, 1);
-	mpz_mul_2exp(*den, *den, (deg-i)*k);
+	mpz_mul_2exp(*den, *den, (d-i)*k);
 	mpz_mul(tmp2, coeff[i], *den);
  	mpz_add(*num, tmp2 , tmp1);
 	//gmp_printf("tmp1: %Zd\n tmp2: %Zd\n num:%Zd\n den: %Zd\n ", tmp1, tmp2, *num, *den);

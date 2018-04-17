@@ -314,6 +314,7 @@ void eval_poly_horner(mpz_t *coeff, int a, unsigned int k, unsigned long int deg
     mpz_init(tmp2);
 
     mpz_set_si(*den, 1);
+    mpz_set_si(*num, 0);
     long int d = deg;
     long int i;
     

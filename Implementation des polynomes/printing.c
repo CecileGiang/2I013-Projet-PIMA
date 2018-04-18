@@ -284,8 +284,17 @@ void eval_poly_horner(mpz_t *coeff, int a, unsigned int k, unsigned long int deg
 	reduire_fraction(den, num);
 }
 
+/* RESULTATS EXPERIMENTAUX EN FAISANT VARIER LE DEGRE */
+/*
 
+Cette fonction ecrira dans 6 fichiers de type texte (2 pour chaque methode: 1 pour le numerateur et 1 pour le denominateur) ou nous pourrons voir le denominateur et le numerateur en fonction du degre.
+L affichage se fera en deux colonnes, la premiere qui represente le degre et la deuxieme qui donnera la valeur du numerateur ou denominateur.
 
+Le degre maximum qu on veut atteindre sera saisi par l utilisateur, ainsi que la partition.
+
+Nous pourrons utiliser ses fichiers ulterieurement pour la creation des graphes a l aide de gnuplot.
+
+*/
 void imprimer_resultats_deg(char *fichier1num, char *fichier1den, char *fichier2num, char *fichier2den, char *fichier_hornernum, char *fichier_hornerden, mpz_t *poly, int a, unsigned int k, unsigned long int deg_max, int partition, mpz_t *num1bis, mpz_t *den1bis, mpz_t *num, mpz_t *den, mpz_t *num3, mpz_t *den3){ 
 	unsigned long int i;
 	
@@ -354,12 +363,14 @@ int main(){
 
 	/* Ecriture/lecture de polynôme */
 
+	/* Ici l utilisateur saisira le degre maximum atteint par notre test */
 	unsigned long int deg;
 	printf("Veuillez saisir le degre maximum n/\nn=");
 	scanf("%lu", &deg);
 	
+	/* Ici l utilisateur pourra saisir le pas pour creer une partition */
 	int partition;
-	printf("Veuillez saisir le pas pour la partition n/\nn=");
+	printf("Veuillez saisir le pas pour la partition p/\nn=");
 	scanf("%d", &partition);
 
 	mpz_t *poly = malloc((deg+1)*sizeof(mpz_t));

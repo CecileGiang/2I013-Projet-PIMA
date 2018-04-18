@@ -1,0 +1,7 @@
+Weijie YE
+
+gcc -Wall -lgmp -o eval1 fonctions.c Evalm1.c polynome.c
+
+Les resultats fournis sont avec n=100,a=12345,k=5.
+
+Les resulatats pour n=5000,a=12345,k=5. sont trop volumineux,environ 200 Mo

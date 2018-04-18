@@ -1,7 +1,8 @@
+//10/04/2018 Weijie YE
+//header pour la version impelementer par cecile.
 #ifndef POLYNOME_
 #define POLYNOME_
 
-/* FONCTIONS DE LECTURE/ECRITURE DE POLYNÔMES - PARSER */
 
 /* Fonction de lecture des coefficients d'un polynôme depuis un fichier c (parseur) */
 void parse_file(char *nom_fichier, mpz_t *polynome, unsigned long int deg);
@@ -9,35 +10,21 @@ void parse_file(char *nom_fichier, mpz_t *polynome, unsigned long int deg);
 /* Fonction d'écriture de coefficients aléatoires d'un polynôme dans un fichier c */
 void set_coefficients(char *nom_fichier, unsigned long int deg,unsigned int max);
 
-/* NOTE: 
-Génération aléatoire de mpz_t. Ces mpz_t seront ensuite stockés dans un fichier qui pourra être lu par la fonction parse_file. Le nombre de mpz_t créés sera de n avec n e degré entré par l'utilisateur. 
 
 
-Pour initialiser le noyau (seed) permettant de générer aléatoirement des nombres, il nous faut déclarer un paramètre (dit "random state parameter"), et l'initialiser par la fonction gmp_randinit_defaut.
-Le noyau initial sera ensuite modifié avec la fonction gmp_randseed_ui.
-
-La taille du noyau détermine le nombre de séquences de nombres aléatoires qu'il est possible de générer.
-
-Une fois le noyau correctement paramétré, l'appel à mpz_rrandomb (mpz_t rop, gmp_randstate_t state, mp_bitcnt_t n) permet de générer un mpz_t aléatoire, compris entre 0 et 2^n-1 inclus, et de le stocker dans rop.
-*/
-
+void eval_poly_1(mpz_t *coeff, long long a, long long k, unsigned long int deg, mpz_t *res_num, mpz_t *res_den);
+void eval_poly_2(mpz_t *coeff, long long a, long long k, unsigned long int deg, mpz_t *res_num, mpz_t *res_den);
+//void evaluateHorner(mpz_t *coeff, long long a, long long k, unsigned long int deg, mpz_t *res_num, mpz_t *res_den);
+void evaluateHorner(mpz_t *coeff, long long a, long long k, unsigned long int deg, mpz_t *res_num, mpz_t *res_den);
+//cette fonction efface les donnees qui sont dans le fichier ;
+void effacer_fichier(char *nom_fichier);
 
 
-
-
-/* FONCTIONS D'EVALUATION DES POLYNÔMES */
-/* Par la suite nous ferons l'hypothèse que a et k sont compris entre (-2)⁶³ et 2⁶³-1, nous les stockerons donc dans des long long (int) */
-
-/* METHODE 1: q(a/(2^k)) = c0*(a/(2^k))⁰ + c1*(a/(2^k))¹ +...+ cn*(a/(2^k))^n, où n est le degré du polynôme. */
-long double eval_poly_1(mpz_t *coeff, long long a, long long k, unsigned long int deg, mpz_t *res);
-
-/*METHODE 2: q(a/(2^k)) = (c0*a⁰*2^(k*n) + c1*a¹*2^(k*(n-1)) +...+ cn*a^n*2^(k*(n-n)))/2^(n*k), où n est le degré du polynôme. */
-    
-long double eval_poly_2(mpz_t *coeff, long long a, long long k, unsigned long int deg, mpz_t *res);
-
-/*la fonction qui enregistre le temps de chaque evaluation*/
-void enregistrement(char *nomfic, unsigned int i,float time,float time2);
-
+// void enregistrement(char *nomfic, unsigned int i,float time,float time2);
+void enregistrement_1(char *nomfic,unsigned long int n,float time);
+void enregistrement_2(char *nomfic,unsigned long int n,float time, float time2);
+void enregistrement_3(char *nomfic,unsigned long int n,float time, float time2,float time3);
+//Cette fonction ecrit le resultat obtenu dans un fichier .
 void ecrit_result(char *nom_fichier, mpz_t res);
 
 #endif

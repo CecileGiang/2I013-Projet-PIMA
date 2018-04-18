@@ -8,10 +8,14 @@
 
 /* _______________FONCTIONS DE LECTURE/ECRITURE DE POLYNOMES DANS UN FICHIER C___________ */
 
-/* Cette fonction nous permet de lire les coefficients de type mpz_t ecrits dans un fichier sur la forme d une liste. 
+/* 
+
+Cette fonction nous permet de lire les coefficients de type mpz_t ecrits dans un fichier sur la forme d une liste. 
 Nous lisons donc chaque ligne, ensuite nous stockons le coefficient dans un tableau qui representera notre polynome et puis nous faisons un retour a la ligne. 
 Nous faisons cela jusqu a avoir n+1 coefficients, n etant le degre du polynome et qui a ete saisi precedemment.
-L indice du tableau polynome correspondra bien au degre du terme, ainsi le premier terme (d indice 0) sera le terme constant, le deuxieme terme (d indice 1) celui de degre 1, et ainsi de suite. */
+L indice du tableau polynome correspondra bien au degre du terme, ainsi le premier terme (d indice 0) sera le terme constant, le deuxieme terme (d indice 1) celui de degre 1, et ainsi de suite. 
+
+*/
 
 void parse_file(char *nom_fichier, mpz_t *polynome, unsigned long int deg){
 
@@ -29,7 +33,7 @@ void parse_file(char *nom_fichier, mpz_t *polynome, unsigned long int deg){
 		mpz_inp_str(polynome[i], f, 10); //lit le mpz_t stocké dans le fichier, le stocke dans polynome[i] puis passe a la ligne
 		i++;
 	}
-		fclose(f);
+	fclose(f);
 }
 
 /* __________GENERATION ALEATOIRE DE MPZ_T___________ */
@@ -39,14 +43,14 @@ void parse_file(char *nom_fichier, mpz_t *polynome, unsigned long int deg){
 Cette fonction ecrit des coefficients entiers de type mpz sur un fichier donne en argument, qui pourrq etre lu plus tard par la fonction parse_file.
 Le nombre de coefficients sera de n+1 avec n le degre donne par l utilisateur.
 Ceci se fait en implantantant un etat random a l aide de l algorithme de Mersenne Twister. 
-Ce noyau donne plus tard des valeurs aleatoires (entre 0 et 2^(n-1), n etant le troisieme argument de la fonction)
+Ce noyau donne plus tard des valeurs aleatoires (entre 0 et 2^(n-1), n etant le troisieme argument de la fonction qui represente la taille binaire souhaitee)
 a chaque coefficient.
 Comme nous souhaitons aussi avoir des nombres negatifs, nous les generons aleatoirement, c est-a-dire, nous creons une variable signe,
 qui determinera si un nombre est positif ou negatif avec une equiprobabilite.
 
 */
 
-void random_coeff(char *nom_fichier, unsigned long int deg) {
+void random_coeff(char *nom_fichier, unsigned long int deg, int taille_bin) {
 	
 	FILE *f = fopen(nom_fichier, "w+");
 
@@ -69,7 +73,7 @@ void random_coeff(char *nom_fichier, unsigned long int deg) {
 
 
 	for (i = 0; i <= deg; i++){
-		mpz_rrandomb(coeff, state, 20); //coeff prend une valeur random entre 0 et 2^(n-1) grace a l algorithme pris par state
+		mpz_rrandomb(coeff, state, taille_bin); //coeff prend une valeur random entre 0 et 2^(n-1) grace a l algorithme pris par state
 		if (rand()%2 == 0){ //nous creons artificiellement des entiers negatifs aussi, avec une chance sur deux
 			sign = 1;
 		}
@@ -77,7 +81,7 @@ void random_coeff(char *nom_fichier, unsigned long int deg) {
 			sign = -1;
 		}
 		mpz_mul_si(coeff, coeff, sign); 
-		mpz_out_str(f, 10, coeff); //nous imprimons le nombre dans le fichier
+		mpz_out_str(f, 10, coeff); //nous imprimons le nombre en base 10 dans le fichier
 		fputs("\n", f); //retour a la ligne
 	}
 	gmp_randclear(state);
@@ -94,49 +98,34 @@ void random_coeff(char *nom_fichier, unsigned long int deg) {
 /* 
 
 Nous utiliserons cette fonction pour avoir la fraction qui donne comme resultat l evaluation du polynome, sur sa forme reduite.
-Nous profitons le fait que le denominateur est toujours une puissance de 2, donc, tant que le reste de la division du numerateur par 2 soit 0,
-nous en deduisons que le numerateur est pair, est donc nous pouvons le diviser par 2, ainsi que le denominateur.
-Comme pour faire ce teste nous aurons deja divise, nous avons une division de plus. 
-Ce pourquoi a la fin nous ajoutons 1 au resultat et nous multiplions par 2
+L idee est simple: nous calculons d abord le plus grand commun diviseur du numerateur et denominateur, puis nous divisons chacun par ce valeur et donc, nous aurons ainsi une primalite relative entre le numerateur et le denominateur.
 
 */
 
 void reduire_fraction(mpz_t *den, mpz_t *num){
-	
-	mpz_t num1;
-	mpz_init(num1);
-	mpz_set(num1, *num);
 
-	mpz_t reste_num;
-	mpz_init(reste_num);
-	
-	do{
-		mpz_tdiv_r_2exp(reste_num, num1, 1); //reste_num stockera le reste de la division euclidienne de num1 par 2^1
-		mpz_div_2exp(*den, *den, 1);
-	}
-	while (mpz_cmp(reste_num, 0) == 0); // mpz_cmp(mpz_t op1, double op2) renvoie 0 lorsque op1 = op2
-	mpz_mul_2exp(num1, num1, 1);
-	mpz_add_ui(*num, num1, 1);
-	mpz_mul_2exp(*den, *den, 1); 
+	mpz_t gcd;
+	mpz_init(gcd);
+	mpz_gcd(gcd, *num, *den);
 
+	mpz_divexact(*num, *num, gcd);
+	mpz_divexact(*den, *den, gcd);
+
+	mpz_clear(gcd);
 }
 
 
 /* __________FONCTIONS D EVALUATION DE POLYNOMES__________ */
 
 /* METHODE 1: 
-
 Soit Q un polynome a coefficients entiers notes c0, c1, ... , cn et n son degre:
-
 Q(a/(2^k)) = c0*(a/(2^k))⁰ + c1*(a/(2^k))¹ +...+ cn*(a/(2^k))^n */
 
 /* 
-
 Avec cette premiere fonction, nous obtenons un resultat qui n est pas precis a cause de la facon dont la division est traitee (c est-a-dire division entiere), 
 pourtant elle nous sert pour avoir une approximation du resultat et ainsi avoir un point de comparaison.
 Elle marche de la maniere suivant: nous calculons a chaque iteration le produit du coefficient par la valeur d evaluation, 
 qui peut bien ne pas etre un entier. Pourtant, nous traitons cette valeur comme un entier et nous rajoutons ce produit a une variable qui representera le resultat. 
-
 */
 
 void eval_poly_1(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, mpz_t *res){
@@ -144,7 +133,7 @@ void eval_poly_1(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, mpz
 		mpz_set(*res, coeff[0]); //On initialise le résultat à c0*(a/(2^k))⁰ = c0
 
 		// Traitement du cas deg=0
-		if(deg==0) exit(0);
+		if(deg==0) return;
 
 		int ai = a;
 
@@ -160,103 +149,68 @@ void eval_poly_1(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, mpz
 		}
 
 		mpz_clear(tmp);
-
+	
 }
 
 
 /* METHODE 1: 
-
 Soit Q un polynome a coefficients entiers notes c0, c1, ... , cn et n son degre:
-
 Q(a/(2^k)) = c0*(a/(2^k))⁰ + c1*(a/(2^k))¹ +...+ cn*(a/(2^k))^n */
 
 /* 
 
 La valeur obtenu comme resultat en utilisant cette fonction est bien precise, elle marche de la facon suivante:
-L idee est de faire la somme deux a deux des termes ci-dessus, sans utiliser le fait qu on sait que le denominateur commun sera celui du deuxieme terme.
-D abord nous creons les variables temporaires qui stockerons les resultats des sommes et multiplications a chaque iteration, egalement des variables
-qui prendront les valeurs des numerateurs et denominateurs.
-Donc, nous avons le num1 et den1 qui seront le numerateur et denominateur du terme a gauche. Aussi, nous avons num2 et den2 qui represent le terme a droite.
-A chaque iteration nous faisons le produit de num1 et den2, ainsi que celui de den1 et num2. Apres nous faisons la somme de ce produit, qui sera
-utilise comme num1 pour la prochaine iteration, et nous donnerons a num2 la valeur qui correspond a son degre, c est-a-dire, le produit de son coefficient correspondant par a^i,
-i etant le degre du terme.
-Pour le traitement de denominateur, nous faisons le produit de deux denominateurs a chaque iteration, pourvu que nous devons sommer en utilisant un denominateur commun
+L idee est de faire la somme deux a deux des termes ci-dessus, en utilisant le fait qu on sait que le denominateur commun sera celui du deuxieme terme.
+Nous initialisons donc le numerateur et le denominateur comme ca se ferait pour un polynome de degre 0, donc le numerateur vaut le coefficient constant, stocke dans le tableau de coefficients sur la case 0, et le denominateur vaut 1.
+Nous faisons le test du degre, pour ne plus modifier si c est le cas et le degre vaut bien 0.
+Sinon, nous continuos a modifier la valeur du numerateur en la multipliant d abord par 2^k, qui nous permettra d avoir un denominateur commun entre le deux termes, et ainsi faire la somme.
+A ce valeur, nous rajouterons le produit entre le coefficient du terme suivant et son a^i correspondant au degre du coefficient. Cette variable ai est modifie dernierement pour que son exposant corresponde au degre.
+
+Apres etre sortis de la boucle, nous mettons a jour la valeur du denominateur en lui donnant 2^(k*deg), car ca sera la valeur necessaire pour mettre en denominateur commun tous les termes deja sommes et dont le resultat de la somme sera dans la varible num.
 
 */
 
 void eval_poly_1bis(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, mpz_t *num, mpz_t *den){
 	
-	//creation de variables mpz_t temporels pour stocker les additions et produits
-	mpz_t tmp1;
-	mpz_t tmp2;
-	mpz_init(tmp1);
-	mpz_init(tmp2);
-
-	// creation de variables qui simulent les deux numerateurs pour faire une somme deux a deux
-	mpz_t num1;
-	mpz_t num2;
-	mpz_init(num1);
-	mpz_init(num2);
+	mpz_set(*num, coeff[0]); //initialisation du numerateur a c0
+	mpz_set_si(*den, 1);	//le premier terme a comme denominateur 1, qui est (2^k)^0
+	
+	if (deg == 0) return;
 
 	unsigned long int i;
 
-	long int ai = 1;
-	long int ai_decale = a;
+	mpz_t ai;
+	mpz_init(ai);
+	mpz_set_si(ai, a);
 
-	mpz_t den1;
-	mpz_init(den1);
-	mpz_set_si(den1, 1);	//le premier terme a comme denominateur 1, qui est (2^k)^0
 
-	mpz_t den2;
-	mpz_init(den2);
-	mpz_set_si(den2, 1);
-	mpz_mul_2exp(den2,den2, k); //le deuxieme terme a comme denominateur (2^k)^1
-
-	mpz_mul_si(num1, coeff[0], ai);
-	mpz_mul_si(num2, coeff[1], ai_decale);
-
-	if (deg == 0){
-		mpz_set(*num, num1);
-		mpz_set(*den, den1);
-		return;
-	}
-
-	mpz_mul(tmp1, num1, den2);
-	mpz_mul(tmp2, num2, den1);
-	mpz_add(*num, tmp1, tmp2);
-	mpz_mul(*den, den1, den2);
-
-	for (i = 2; i <= deg; i++){
-		mpz_set(num1, *num);
-		mpz_set(den1, *den);
-		ai_decale = ai_decale * a;
-		mpz_mul_si(num2, coeff[i], ai_decale);
-		mpz_mul_2exp(den2, den1, k);
-		mpz_mul(tmp1, num1, den2);
-		mpz_mul(tmp2, num2, den1);
-		mpz_add(*num, tmp1, tmp2);
-		mpz_mul(*den, den1, den2);
+	for (i = 1; i <= deg; i++){
+		
+		//*num = (*num)(2^k) + (ci)(a^i), avec *num = c0 au premier tour
+		mpz_mul_2exp(*num, *num, k);
+		mpz_addmul(*num, coeff[i], ai);
+		mpz_mul_si(ai, ai, a);
 
 	}
 	
-	mpz_clear(num1);
-	mpz_clear(num2);
-	mpz_clear(tmp1);
-	mpz_clear(tmp2);
-	mpz_clear(den1);
-	mpz_clear(den2);
+	//La valeur du denominateur sera toujours 2^(k*deg)
+	mpz_mul_2exp(*den, *den, k*deg);
+
+	mpz_clear(ai);
+	reduire_fraction(den, num);
 }
 
 /* METHODE 2: 
-
-Soit Q un polynome a coefficients entiers dont la taille peut etre tres grande, notes c0, c1, ... , cn 
-et n son degre:
+Soit Q un polynome a coefficients entiers dont la taille peut etre tres grande, notes c0, c1, ... , cn et n son degre:
 Q(a/(2^k)) = (c0*a⁰*2^(k*n) + c1*a¹*2^(k*(n-1)) +...+ cn*a^n*2^(k*(n-n)))/2^(n*k) */
 
 void eval_poly_2(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, mpz_t *num, mpz_t *den){
 
+	mpz_t ai;
+	mpz_t ai_decale;//ai_decale prendra la valeur de ai*2^ki
+	mpz_init(ai_decale);
+	mpz_init(ai);
 	mpz_set_si(ai, a); //ai est la valeur a^i pour le coefficient ci
-	mpz_t ai_decale; //ai_decale prendra la valeur de ai*2^ki
 
 	mpz_t tmp;
 	mpz_init(tmp);
@@ -266,7 +220,6 @@ void eval_poly_2(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, mpz
 		mpz_set(*num, coeff[0]);
 		return;
 	}
-
 	else{
 		//Premier terme du dénominateur: coeff[0]*2^(k*deg)
 		mpz_mul_2exp(*num, coeff[0], k*deg);
@@ -281,14 +234,15 @@ void eval_poly_2(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, mpz
 
 		mpz_mul_2exp(*den, *den, k*deg);
 	}
-
+	
 	mpz_clear(tmp);
 	mpz_clear(ai_decale);
 	mpz_clear(ai);
+	reduire_fraction(den, num);
+
 }
 
 /*	 EVALUATION D APRES LA METHODE DE HORNER
-
 La methode de Horner pour un polynome P(X) = c0 + c1*X + c2*X^2 + ... + cn*X^n  ou n est son degre et donc
 le coefficient dominant n est pas nul, permet d evaluer un polynome quelconque de la maniere suivante:
               P(X) = c0 + X(c1 + X(c2 + ... + X(cn-1 + cn*X)))
@@ -302,6 +256,8 @@ Soit, en mettant tout sur le meme denominateur:
 */
 
 void eval_poly_horner(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, mpz_t *num, mpz_t *den){
+
+	//Creation des variables temporaires pour stocker le resultats des operations intermediaires pour calculer le denominateur et le numerateur
     mpz_t tmp1;
     mpz_init(tmp1);
     mpz_t tmp2;
@@ -309,6 +265,8 @@ void eval_poly_horner(mpz_t *coeff, int a, unsigned int k, unsigned long int deg
 
     mpz_set_si(*den, 1);
     mpz_set_si(*num, 0);
+
+	//Nous avons besoin des entiers signes pour faire la distinction entre un nombre positif et un nombre negatif lors de la condition "i >= 0" dans la boucle for
     long int d = deg;
     long int i;
     
@@ -318,12 +276,12 @@ void eval_poly_horner(mpz_t *coeff, int a, unsigned int k, unsigned long int deg
 	mpz_mul_2exp(*den, *den, (d-i)*k);
 	mpz_mul(tmp2, coeff[i], *den);
  	mpz_add(*num, tmp2 , tmp1);
-	//gmp_printf("tmp1: %Zd\n tmp2: %Zd\n num:%Zd\n den: %Zd\n ", tmp1, tmp2, *num, *den);
-  		
+		
 	
   }
       mpz_clear(tmp1);
       mpz_clear(tmp2);
+	reduire_fraction(den, num);
 }
 
 int main(){
@@ -336,8 +294,8 @@ int main(){
 
 	mpz_t *poly = malloc((deg+1)*sizeof(mpz_t));
 
-	random_coeff("coefficients_p.c",deg); //Ecriture de coefficients de type mpz_t aléatoires dans le fichier
-	parse_file("coefficients_p.c",poly,deg); //Ecriture des coefficients dans le tableau tab
+	random_coeff("coefficients_p.c",deg, 500); //Ecriture de coefficients de type mpz_t aléatoires dans le fichier
+	parse_file("coefficients_p.c",poly, deg); //Ecriture des coefficients dans le tableau tab
 
 
 	/* Evaluation de polynôme : les valeurs de a et k seront demandees*/
@@ -364,6 +322,7 @@ int main(){
 
 
 	/* Methode 1-bis*/
+	
 	mpz_t den1bis;
 	mpz_t num1bis;
 	mpz_init(num1bis);
@@ -371,23 +330,24 @@ int main(){
 
 	eval_poly_1bis(poly, a, k, deg, &num1bis, &den1bis);
 	gmp_printf("Resultat méthode 1-bis: %Zd / %Zd\n", num1bis, den1bis);
-
+	
 	mpz_clear(num1bis);
 	mpz_clear(den1bis);
-
+	
+	
 	/* Methode 2 */
-	mpz_t den2;
-	mpz_t num2;
-	mpz_init(num2);
-	mpz_init(den2);
+	mpz_t den;
+	mpz_t num;
+	mpz_init(num);
+	mpz_init(den);
 
-	eval_poly_2(poly, a, k, deg, &num2, &den2);
-	gmp_printf("Resultat méthode 2: %Zd / %Zd\n", num2, den2);
+	eval_poly_2(poly, a, k, deg, &num, &den);
+	gmp_printf("Resultat méthode 2: %Zd / %Zd\n", num, den);
 
-	mpz_clear(num2);
-	mpz_clear(den2);
+	mpz_clear(num);
+	mpz_clear(den);
 
-	//Methode de Horner
+	/* Methode de Horner */
 	mpz_t den3;
 	mpz_t num3;
 	mpz_init(num3);
@@ -397,7 +357,8 @@ int main(){
 	gmp_printf("Resultat methode 3 (Horner): %Zd / %Zd\n", num3, den3);
 	mpz_clear(num3);
 	mpz_clear(den3);
-
+	
 	free(poly);
+
 	return 0;
 }

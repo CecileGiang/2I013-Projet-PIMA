@@ -284,25 +284,34 @@ void eval_poly_horner(mpz_t *coeff, int a, unsigned int k, unsigned long int deg
 	reduire_fraction(den, num);
 }
 
+
 /* RESULTATS EXPERIMENTAUX EN FAISANT VARIER LE DEGRE */
 /*
 
 Cette fonction ecrira dans 6 fichiers de type texte (2 pour chaque methode: 1 pour le numerateur et 1 pour le denominateur) ou nous pourrons voir le denominateur et le numerateur en fonction du degre.
 L affichage se fera en deux colonnes, la premiere qui represente le degre et la deuxieme qui donnera la valeur du numerateur ou denominateur.
-
 Le degre maximum qu on veut atteindre sera saisi par l utilisateur, ainsi que la partition.
-
+ 
 Nous pourrons utiliser ses fichiers ulterieurement pour la creation des graphes a l aide de gnuplot.
 
+D autre part, ce fonction calcule aussi le temps d execution de chaque methode et l affiche directement sur le terminal. Les resultats sont donnes en millisecondes.
+
+ 
 */
+
+
 void imprimer_resultats_deg(char *fichier1num, char *fichier1den, char *fichier2num, char *fichier2den, char *fichier_hornernum, char *fichier_hornerden, mpz_t *poly, int a, unsigned int k, unsigned long int deg_max, int partition, mpz_t *num1bis, mpz_t *den1bis, mpz_t *num, mpz_t *den, mpz_t *num3, mpz_t *den3){ 
 	unsigned long int i;
 	
 			/*Resultats en utilisant la methode 1 */
 	FILE *fd = fopen(fichier1num, "w+");
 	
-	for (i = 0; i < deg_max; i+=partition){
+	for (i = 0; i <= deg_max; i+=partition){
+		clock_t temps_initial = clock();
 		eval_poly_1bis(poly, a, k, i, num1bis, den1bis);
+		clock_t temps_final = clock();
+		double temps_cpu = (double)(temps_final - temps_initial)/CLOCKS_PER_SEC*1000;
+		printf("Temps d'execution pour la methode 1, au degre %lu: %1.18e\n", i, temps_cpu);
 		fprintf(fd, "%ld\t", i);
 		mpz_out_str(fd, 10, *num1bis); //nous imprimons le numerateur en base 10 dans le fichier
 		fputs("\n", fd);
@@ -310,7 +319,7 @@ void imprimer_resultats_deg(char *fichier1num, char *fichier1den, char *fichier2
 	fclose(fd);
 
 	fd = fopen(fichier1den, "w+");	
-	for (i = 0; i < deg_max; i+=partition){
+	for (i = 0; i <= deg_max; i+=partition){
 		eval_poly_2(poly, a, k, i, num, den);
 		fprintf(fd, "%ld\t", i);
 		mpz_out_str(fd, 10, *den); //nous imprimons le nombre dans le fichier
@@ -320,8 +329,12 @@ void imprimer_resultats_deg(char *fichier1num, char *fichier1den, char *fichier2
 
 			/*Resultats en utilisant la methode 2*/
 	fd = fopen(fichier2num, "w+");	
-	for (i = 0; i < deg_max; i+=partition){
+	for (i = 0; i <= deg_max; i+=partition){
+		clock_t temps_initial = clock();
 		eval_poly_2(poly, a, k, i, num, den);
+		clock_t temps_final = clock();
+		double temps_cpu = (double)(temps_final - temps_initial)/CLOCKS_PER_SEC*1000;
+		printf("Temps d'execution pour la methode 2, au degre %lu: %1.18e\n", i, temps_cpu);
 		fprintf(fd, "%ld\t", i);
 		mpz_out_str(fd, 10, *num); //nous imprimons le nombre dans le fichier
 		fputs("\n", fd);
@@ -329,7 +342,7 @@ void imprimer_resultats_deg(char *fichier1num, char *fichier1den, char *fichier2
 	fclose(fd);	
 
 	fd = fopen(fichier2den, "w+");	
-	for (i = 0; i < deg_max; i+=partition){
+	for (i = 0; i <= deg_max; i+=partition){
 		eval_poly_2(poly, a, k, i, num, den);
 		fprintf(fd, "%ld\t", i);
 		mpz_out_str(fd, 10, *den); //nous imprimons le nombre dans le fichier
@@ -341,8 +354,12 @@ void imprimer_resultats_deg(char *fichier1num, char *fichier1den, char *fichier2
 			/* Resultats en utilisant la methode de Horner */
 
 	fd = fopen(fichier_hornernum, "w+");	
-	for (i = 0; i < deg_max; i+=partition){
+	for (i = 0; i <= deg_max; i+=partition){
+		clock_t temps_initial = clock();
 		eval_poly_2(poly, a, k, i, num, den);
+		clock_t temps_final = clock();
+		double temps_cpu = (double)(temps_final - temps_initial)/CLOCKS_PER_SEC*1000;
+		printf("Temps d'execution pour la methode de Horner, au degre %lu: %1.18e\n", i, temps_cpu);
 		fprintf(fd, "%ld\t", i);
 		mpz_out_str(fd, 10, *num3); //nous imprimons le nombre dans le fichier
 		fputs("\n", fd);
@@ -350,7 +367,7 @@ void imprimer_resultats_deg(char *fichier1num, char *fichier1den, char *fichier2
 	fclose(fd);
 	
 	fd = fopen(fichier_hornerden, "w+");	
-	for (i = 0; i < deg_max; i+=partition){
+	for (i = 0; i <= deg_max; i+=partition){
 		eval_poly_2(poly, a, k, i, num, den);
 		fprintf(fd, "%ld\t", i);
 		mpz_out_str(fd, 10, *den3); //nous imprimons le nombre dans le fichier
@@ -363,19 +380,21 @@ int main(){
 
 	/* Ecriture/lecture de polynôme */
 
-	/* Ici l utilisateur saisira le degre maximum atteint par notre test */
 	unsigned long int deg;
-	printf("Veuillez saisir le degre maximum n/\nn=");
+	printf("Veuillez saisir le degre maximum \nn=");
 	scanf("%lu", &deg);
 	
-	/* Ici l utilisateur pourra saisir le pas pour creer une partition */
 	int partition;
-	printf("Veuillez saisir le pas pour la partition p/\nn=");
+	printf("Veuillez saisir le pas pour la partition\np=");
 	scanf("%d", &partition);
+
+	int taille_bin;
+	printf("Veuillez entrer la taille binaire des coefficients\nt=");
+	scanf("%d", &taille_bin);
 
 	mpz_t *poly = malloc((deg+1)*sizeof(mpz_t));
 
-	random_coeff("coefficients_p.c",deg, 500); //Ecriture de coefficients de type mpz_t aléatoires dans le fichier
+	random_coeff("coefficients_p.c",deg, taille_bin); //Ecriture de coefficients de type mpz_t aléatoires dans le fichier
 	parse_file("coefficients_p.c",poly, deg); //Ecriture des coefficients dans le tableau tab
 
 

@@ -1,0 +1,171 @@
+
+
+
+\documentclass[12pt]{report}
+\usepackage[T1]{fontenc}
+\usepackage{indentfirst}
+\usepackage{color}
+\setlength{\parindent}{2em}
+\usepackage{selinput}
+\usepackage{graphicx}
+\begin{document}
+
+\title{Evaluation des fonctions}
+\author{Cécile GIANG, Pamela OSUNA, Weijie YE}
+\date{29/04/2018}
+\maketitle
+
+\paragraph{Les trois méthodes}
+~~\\
+
+\quad Méthode 1(M1) : $q(a/(2^k)) = c0*(a/(2^k))^0+ c1*(a/(2^k))^1 +...+ cn*(a/(2^k))^n, $où n est le degré du polynôme.\\
+
+
+Méthode 2(M2) :$ q(a/(2^k)) = (c0*a^0*2^{(k*n)} + c1*a¹*2^{(k*(n-1))} +...+ cn*a^n*2^{(k*(n-n)))}/2^{(n*k)}$\\
+
+Horner (M3)
+\paragraph{Materiel d'expérimentation } ~~\\
+\begin{figure}[ht]
+\centering
+\includegraphics[scale=0.5]{mac.png}
+\end{figure}
+\paragraph{La complexité }~~\\
+
+Dans la suite, les fonctions de la bibliothèque GMP comme $mpz_mul_ui() , mpz_mul_2exp()$ etc.. seront comptés comme une opération.
+
+Soit n le degré des polynômes, et C(n) le nombre d'opération pour un degré n.
+
+Dans les trois méthodes on observe qu'une seule boucle for avec des opérations finis.
+
+Pour M1 : C(n+1)=C(n)+3 . On a 13+3*n opérations. \\
+
+Pour M2 : C(n+1)=C(n)+4. On a 20+4*n opérations.\\
+
+Pour M3 : C(n+1)=C(n)+3. On a 14+3*n opérations.\\
+
+La complexité pour les trois méthodes semble être linéaire, O(n).\\
+
+\paragraph{Les Evaluations\\}
+
+On va essayer d'évaluer les trois méhodes M1,M2 et M3.
+Les variables en questions sont:
+
+ \quad-n le degré de polynôme.
+ 
+ \quad-a et k le avec $a/2^k$ la variable.
+ 
+ \quad-t la taille des coefficients.\\  
+
+\newpage
+\subparagraph{En fonction de degré n\\}
+	
+
+On a effectué l'évaluation avec des coefficients aléatoire qui sont crées par la fonction $mpz_urandomb (mpz\_t rop, gmp\_randstate\_t state, mp\_bitcnt\_t n)$, qui génère les coefficients de 0 à $ 2^{(n-1)}$,  et avec un $if(rand()\%==0)$ pour obtenir des valeurs négatives.
+
+On a choisi: degré k=5000, a=12345 et k=5. Avec des coefficients de taille $2^{48}$.
+
+On a évalué avec des coefficients aléatoires(positif et négatif) et avec des coefficients positifs.
+
+Les trois méthodes sont représentées par couleur : {\color{blue}{M1}} {\color{red}{M2}} {\color{yellow}{M3}}. \\
+l'axe x représente le degré n\\
+l'axe x représente le temps d'exécution en seconde multiplié par 10 000
+
+(Le fichier E1\_temps contient le temps d'exécution pour chaque incrémentation de n, pour pouvoir insérer les résultats dans l'excel, ils sont en seconde et ils sont multiplié par 10000. )
+\begin{figure}[ht]
+\centering
+\includegraphics[scale=0.5]{EvaluationE1.png}
+\end{figure}
+\\
+\begin{figure}[ht]
+\centering
+\includegraphics[scale=0.8]{StatsE1.png}
+\end{figure}
+Les dénominateurs et les numérateurs obtenu sont identiques pour les trois méthodes.
+
+A partir de ces résultats on peut en déduire qu?en termes d?efficacité on a : M3>M1>M2.
+
+Les courbes ci-dessus ne sont pas exactement linéaire mais plutôt polynomiale.
+
+\newpage
+\subparagraph{En fonction de coefficient\\}
+
+
+On a fait évoluer les coefficients on fait varier le max qu'on peut atteindre de $2^0$ à $2^{127}$ et à partir de $2^{128}$ on a segment fault 11.\\
+
+On a fixé a=12345 k=10 et le degré n=1000.
+
+Les trois méthodes sont représentées par couleur : {\color{blue}{M1}}{\color{red}{M2}} {\color{yellow}{M3}}. \\
+l'axe x représente le coefficient $2^x$\\
+l'axe y représente le temps d'exécution en seconde multiplié par 10 000\\
+
+
+\begin{figure}[ht]
+\centering
+\includegraphics[scale=0.5]{EvaluationE2.png}
+\end{figure}
+
+
+\begin{figure}[ht]
+\centering
+\includegraphics[scale=0.8]{StatsE2.png}
+\end{figure}
+On observe une évolution quasi constante pour les trois méthodes.
+On en déduit que la taille des coefficients a peu d'impact sur le temps d'exécution.	
+
+\newpage
+
+
+\subparagraph{En fonction de a et k\\}
+
+On a choisi le degré n=1000, a allant de 1 à 12345 et k est incrémenté de 1 quand a est incrémenté de 50.Les coefficients sont de la taille $2^{48}$.\\
+Les trois méthodes sont représentées par couleur : {\color{blue}{M1}}{\color{red}{M2}} {\color{yellow}{M3}}. \\
+
+l'axe x représente le a allant de 1 à 12345\\
+l'axe y représente le temps d'exécution en seconde multiplié par 10 000\\
+
+\begin{figure}[ht]
+\centering
+\includegraphics[scale=0.5]{EvaluationE3.png}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[scale=0.8]{StatsE3.png}
+\end{figure}
+
+
+En faisant varier a et k on observe une évolution linéaire des trois méthodes.\\
+On observe que M1 est la plus efficace, M2 et M3 ont une courbe identique.
+
+
+\newpage
+\subparagraph{En fonction de degré n et de a, k\\}
+
+On a choisi les coefficients de taille $2^{48}$ car le deuxième test montre qu'ils ne sont pas important.\\
+on a fait varier n, a, k en même temps. Le degré n va de 1 à 5000, a de 1 à 5000 et k de 1 à 100.\\ 
+
+Les trois méthodes sont représentées par couleur : {\color{blue}{M1}}{\color{red}{M2}} {\color{yellow}{M3}}. \\
+
+l'axe x représente le a et le degré n allant de 1 à 5000\\
+l'axe y représente le temps d'exécution en seconde multiplié par 10 000\\
+\begin{figure}[ht]
+\centering
+\includegraphics[scale=0.5]{EvaluationE4.png}
+\end{figure}
+
+\begin{figure}[ht]
+\centering
+\includegraphics[scale=0.8]{StatsE4.png}
+\end{figure}
+
+
+
+\newpage
+
+\paragraph{Conclusion\\}
+
+En se basant sur ces quatre tests on observe que la taille des coefficients a peu d'impact sur le temps d'exécution.
+On peut conjecturer que plus le degré est important plus M3 est efficace, mais quand a et k deviennent important M1 est plus efficace que M3.
+
+
+\end{document}

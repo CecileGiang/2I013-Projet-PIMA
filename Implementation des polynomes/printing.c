@@ -128,7 +128,7 @@ Elle marche de la maniere suivant: nous calculons a chaque iteration le produit 
 qui peut bien ne pas etre un entier. Pourtant, nous traitons cette valeur comme un entier et nous rajoutons ce produit a une variable qui representera le resultat. 
 */
 
-void eval_poly_1(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, mpz_t *res){
+void eval_poly_1bis(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, mpz_t *res){
 
 		mpz_set(*res, coeff[0]); //On initialise le résultat à c0*(a/(2^k))⁰ = c0
 
@@ -170,7 +170,7 @@ Apres etre sortis de la boucle, nous mettons a jour la valeur du denominateur en
 
 */
 
-void eval_poly_1bis(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, mpz_t *num, mpz_t *den){
+void eval_poly_1(mpz_t *coeff, int a, unsigned int k, unsigned long int deg, mpz_t *num, mpz_t *den){
 	
 	mpz_set(*num, coeff[0]); //initialisation du numerateur a c0
 	mpz_set_si(*den, 1);	//le premier terme a comme denominateur 1, qui est (2^k)^0
@@ -300,7 +300,7 @@ D autre part, ce fonction calcule aussi le temps d execution de chaque methode e
 */
 
 
-void imprimer_resultats_deg(char *fichier1num, char *fichier1den, char *fichier2num, char *fichier2den, char *fichier_hornernum, char *fichier_hornerden, mpz_t *poly, int a, unsigned int k, unsigned long int deg_max, int partition, mpz_t *num1bis, mpz_t *den1bis, mpz_t *num, mpz_t *den, mpz_t *num3, mpz_t *den3){ 
+void imprimer_resultats_deg(char *fichier1num, char *fichier1den, char *fichier2num, char *fichier2den, char *fichier_hornernum, char *fichier_hornerden, mpz_t *poly, int a, unsigned int k, unsigned long int deg_max, int partition, mpz_t *num1, mpz_t *den1, mpz_t *num2, mpz_t *den2, mpz_t *num3, mpz_t *den3){ 
 	unsigned long int i;
 	
 			/*Resultats en utilisant la methode 1 */
@@ -308,19 +308,19 @@ void imprimer_resultats_deg(char *fichier1num, char *fichier1den, char *fichier2
 	
 	for (i = 0; i <= deg_max; i+=partition){
 		clock_t temps_initial = clock();
-		eval_poly_1bis(poly, a, k, i, num1bis, den1bis);
+		eval_poly_1(poly, a, k, i, num1, den1);
 		clock_t temps_final = clock();
 		double temps_cpu = (double)(temps_final - temps_initial)/CLOCKS_PER_SEC*1000;
 		printf("Temps d'execution pour la methode 1, au degre %lu: %1.18e\n", i, temps_cpu);
 		fprintf(fd, "%ld\t", i);
-		mpz_out_str(fd, 10, *num1bis); //nous imprimons le numerateur en base 10 dans le fichier
+		mpz_out_str(fd, 10, *num1); //nous imprimons le numerateur en base 10 dans le fichier
 		fputs("\n", fd);
 	}
 	fclose(fd);
 
 	fd = fopen(fichier1den, "w+");	
 	for (i = 0; i <= deg_max; i+=partition){
-		eval_poly_2(poly, a, k, i, num, den);
+		eval_poly_1(poly, a, k, i, num1, den1);
 		fprintf(fd, "%ld\t", i);
 		mpz_out_str(fd, 10, *den); //nous imprimons le nombre dans le fichier
 		fputs("\n", fd);
@@ -331,21 +331,21 @@ void imprimer_resultats_deg(char *fichier1num, char *fichier1den, char *fichier2
 	fd = fopen(fichier2num, "w+");	
 	for (i = 0; i <= deg_max; i+=partition){
 		clock_t temps_initial = clock();
-		eval_poly_2(poly, a, k, i, num, den);
+		eval_poly_2(poly, a, k, i, num2, den2);
 		clock_t temps_final = clock();
 		double temps_cpu = (double)(temps_final - temps_initial)/CLOCKS_PER_SEC*1000;
 		printf("Temps d'execution pour la methode 2, au degre %lu: %1.18e\n", i, temps_cpu);
 		fprintf(fd, "%ld\t", i);
-		mpz_out_str(fd, 10, *num); //nous imprimons le nombre dans le fichier
+		mpz_out_str(fd, 10, *num2); //nous imprimons le nombre dans le fichier
 		fputs("\n", fd);
 	}
 	fclose(fd);	
 
 	fd = fopen(fichier2den, "w+");	
 	for (i = 0; i <= deg_max; i+=partition){
-		eval_poly_2(poly, a, k, i, num, den);
+		eval_poly_2(poly, a, k, i, num2, den2);
 		fprintf(fd, "%ld\t", i);
-		mpz_out_str(fd, 10, *den); //nous imprimons le nombre dans le fichier
+		mpz_out_str(fd, 10, *den2); //nous imprimons le nombre dans le fichier
 		fputs("\n", fd);
 	}
 	fclose(fd);	
@@ -411,12 +411,12 @@ int main(){
 	printf("\nk:\n");
 	scanf("%u", &k);
 
-	/* Methode 1-bis*/
+	/* Methode 1*/
 	
-	mpz_t den1bis;
-	mpz_t num1bis;
-	mpz_init(num1bis);
-	mpz_init(den1bis);
+	mpz_t den1;
+	mpz_t num1;
+	mpz_init(num1);
+	mpz_init(den1);
 	
 	
 	/* Methode 2 */
@@ -433,11 +433,11 @@ int main(){
 	mpz_init(den3);
 
 	/* Nous imprimons des resultats pour un degre qui varie entre 0 et le degre maximum saisi par l utilisateur, ainsi que le pas pour la partition */
-	imprimer_resultats_deg("meth1num.txt", "meth1den.txt", "meth2num.txt", "meth2den.txt", "meth_hornernum.txt", "meth_hornerden.txt", poly, a, k, deg, partition, &num1bis, &den1bis, &num, &den, &num3, &den3);
+	imprimer_resultats_deg("meth1num.txt", "meth1den.txt", "meth2num.txt", "meth2den.txt", "meth_hornernum.txt", "meth_hornerden.txt", poly, a, k, deg, partition, &num1, &den1, &num, &den, &num3, &den3);
 	
 	/* Liberation d espace memoire */
-	mpz_clear(num1bis);
-	mpz_clear(den1bis);
+	mpz_clear(num1);
+	mpz_clear(den1);
 	mpz_clear(num);
 	mpz_clear(den);
 	mpz_clear(num3);

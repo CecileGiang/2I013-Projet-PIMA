@@ -356,7 +356,7 @@ void imprimer_resultats_deg(char *fichier1num, char *fichier1den, char *fichier2
 	fd = fopen(fichier_hornernum, "w+");	
 	for (i = 0; i <= deg_max; i+=partition){
 		clock_t temps_initial = clock();
-		eval_poly_2(poly, a, k, i, num, den);
+		eval_poly_horner(poly, a, k, i, num3, den3);
 		clock_t temps_final = clock();
 		double temps_cpu = (double)(temps_final - temps_initial)/CLOCKS_PER_SEC*1000;
 		printf("Temps d'execution pour la methode de Horner, au degre %lu: %1.18e\n", i, temps_cpu);
@@ -368,7 +368,7 @@ void imprimer_resultats_deg(char *fichier1num, char *fichier1den, char *fichier2
 	
 	fd = fopen(fichier_hornerden, "w+");	
 	for (i = 0; i <= deg_max; i+=partition){
-		eval_poly_2(poly, a, k, i, num, den);
+		eval_poly_horner(poly, a, k, i, num3, den3);
 		fprintf(fd, "%ld\t", i);
 		mpz_out_str(fd, 10, *den3); //nous imprimons le nombre dans le fichier
 		fputs("\n", fd);
